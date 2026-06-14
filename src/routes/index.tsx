@@ -375,32 +375,93 @@ function Doctors() {
 
 function Testimonials() {
   const [i, setI] = useState(0);
-  const t = testimonials[i];
+  const [paused, setPaused] = useState(false);
+  const total = testimonials.length;
+  const go = (n: number) => setI((n + total) % total);
+  const next = () => go(i + 1);
+  const prev = () => go(i - 1);
+
+  // Autoplay
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => setI((p) => (p + 1) % total), 5500);
+    return () => window.clearInterval(id);
+  }, [paused, total]);
+
+  // Swipe support
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
+    touchX.current = null;
+  };
+
   return (
-    <section className="bg-surface/40 py-24">
+    <section
+      className="bg-surface/40 py-24"
+      aria-roledescription="carousel"
+      aria-label="Patient testimonials"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
       <div className="mx-auto max-w-4xl px-5 text-center lg:px-8">
         <SectionHeader kicker="Patient Stories" title="Loved by thousands of smiles" />
-        <div className="mt-14 rounded-3xl border border-border bg-card-gradient p-8 sm:p-12">
-          <div className="flex justify-center gap-1">
-            {Array.from({ length: t.rating }).map((_, k) => (
-              <Star key={k} className="h-5 w-5 fill-accent text-accent" />
+        <div
+          className="mt-14 overflow-hidden rounded-3xl border border-border bg-card-gradient"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") next();
+            else if (e.key === "ArrowLeft") prev();
+          }}
+          tabIndex={0}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${i + 1} of ${total}`}
+        >
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${i * 100}%)` }}
+            aria-live={paused ? "polite" : "off"}
+          >
+            {testimonials.map((t, k) => (
+              <div key={k} className="w-full shrink-0 p-8 sm:p-12" aria-hidden={k !== i}>
+                <div className="flex justify-center gap-1">
+                  {Array.from({ length: t.rating }).map((_, s) => (
+                    <Star key={s} className="h-5 w-5 fill-accent text-accent" />
+                  ))}
+                </div>
+                <p className="mt-6 font-display text-2xl leading-snug text-balance sm:text-3xl">"{t.text}"</p>
+                <p className="mt-6 text-sm text-muted-foreground">— {t.name}</p>
+              </div>
             ))}
           </div>
-          <p className="mt-6 font-display text-2xl leading-snug text-balance sm:text-3xl">"{t.text}"</p>
-          <p className="mt-6 text-sm text-muted-foreground">— {t.name}</p>
-          <div className="mt-8 flex items-center justify-center gap-3">
-            <button onClick={() => setI((i - 1 + testimonials.length) % testimonials.length)} className="grid h-10 w-10 place-items-center rounded-full border border-border hover:bg-surface" aria-label="Previous">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="flex gap-1.5">
-              {testimonials.map((_, k) => (
-                <button key={k} onClick={() => setI(k)} aria-label={`Slide ${k + 1}`} className={`h-1.5 rounded-full transition-all ${k === i ? "w-6 bg-primary" : "w-1.5 bg-border"}`} />
-              ))}
-            </div>
-            <button onClick={() => setI((i + 1) % testimonials.length)} className="grid h-10 w-10 place-items-center rounded-full border border-border hover:bg-surface" aria-label="Next">
-              <ChevronRight className="h-4 w-4" />
-            </button>
+        </div>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <button onClick={prev} className="grid h-11 w-11 place-items-center rounded-full border border-border hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Previous testimonial">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="flex gap-1.5" role="tablist" aria-label="Select testimonial">
+            {testimonials.map((_, k) => (
+              <button
+                key={k}
+                onClick={() => go(k)}
+                role="tab"
+                aria-selected={k === i}
+                aria-label={`Go to testimonial ${k + 1}`}
+                className={`h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${k === i ? "w-6 bg-primary" : "w-1.5 bg-border"}`}
+              />
+            ))}
           </div>
+          <button onClick={next} className="grid h-11 w-11 place-items-center rounded-full border border-border hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Next testimonial">
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </section>
