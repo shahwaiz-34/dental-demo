@@ -18,15 +18,17 @@ import {
   Star,
   Plus,
   Minus,
-  MapPin,
-  Mail,
-  Clock,
   Instagram,
   Twitter,
   Facebook,
   ArrowUpRight,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
+import Contact from "../contact";
+import { MapSection } from "../mapSection/mapSection";
+import { GallerySection } from "../gallery";
+import { Preloader } from "../preLoader";
 import heroImplant from "@/assets/hero-implant.jpg";
 import doc1 from "@/assets/doctor-1.jpg";
 import doc2 from "@/assets/doctor-2.jpg";
@@ -53,18 +55,50 @@ export const Route = createFileRoute("/")({
 });
 
 const services = [
-  { icon: Stethoscope, title: "General Dentistry", desc: "Routine check-ups, cleanings, and family dental care." },
-  { icon: Sparkles, title: "Teeth Whitening", desc: "Professional whitening that brightens up to 8 shades." },
-  { icon: Bone, title: "Dental Implants", desc: "Titanium implants that restore function and confidence." },
-  { icon: Activity, title: "Root Canal", desc: "Pain-free endodontic therapy with modern microscopy." },
-  { icon: Smile, title: "Orthodontics", desc: "Clear aligners and braces for every age and budget." },
+  {
+    icon: Stethoscope,
+    title: "General Dentistry",
+    desc: "Routine check-ups, cleanings, and family dental care.",
+  },
+  {
+    icon: Sparkles,
+    title: "Teeth Whitening",
+    desc: "Professional whitening that brightens up to 8 shades.",
+  },
+  {
+    icon: Bone,
+    title: "Dental Implants",
+    desc: "Titanium implants that restore function and confidence.",
+  },
+  {
+    icon: Activity,
+    title: "Root Canal",
+    desc: "Pain-free endodontic therapy with modern microscopy.",
+  },
+  {
+    icon: Smile,
+    title: "Orthodontics",
+    desc: "Clear aligners and braces for every age and budget.",
+  },
   { icon: Gem, title: "Cosmetic Dentistry", desc: "Veneers, bonding, and smile makeovers." },
 ];
 
 const reasons = [
-  { icon: ShieldCheck, title: "Experienced Doctors", desc: "Board-certified specialists with 10+ years of practice." },
-  { icon: Cpu, title: "Latest Technology", desc: "Digital scans, 3D imaging, and laser dentistry." },
-  { icon: Wallet, title: "Affordable Pricing", desc: "Transparent rates and flexible payment plans." },
+  {
+    icon: ShieldCheck,
+    title: "Experienced Doctors",
+    desc: "Board-certified specialists with 10+ years of practice.",
+  },
+  {
+    icon: Cpu,
+    title: "Latest Technology",
+    desc: "Digital scans, 3D imaging, and laser dentistry.",
+  },
+  {
+    icon: Wallet,
+    title: "Affordable Pricing",
+    desc: "Transparent rates and flexible payment plans.",
+  },
   { icon: Phone, title: "Emergency Support", desc: "24/7 hotline for urgent dental emergencies." },
 ];
 
@@ -76,9 +110,24 @@ const doctors = [
 ];
 
 const testimonials = [
-  { name: "Sofia M.", role: "Implant patient", text: "The team made my implant procedure feel effortless. My smile has never looked better.", rating: 5 },
-  { name: "Liam R.", role: "Whitening patient", text: "Modern, warm, and remarkably gentle. The whitening results blew me away.", rating: 5 },
-  { name: "Priya N.", role: "Family patient", text: "I finally found a dentist my kids actually look forward to visiting.", rating: 5 },
+  {
+    name: "Sofia M.",
+    role: "Implant patient",
+    text: "The team made my implant procedure feel effortless. My smile has never looked better.",
+    rating: 5,
+  },
+  {
+    name: "Liam R.",
+    role: "Whitening patient",
+    text: "Modern, warm, and remarkably gentle. The whitening results blew me away.",
+    rating: 5,
+  },
+  {
+    name: "Priya N.",
+    role: "Family patient",
+    text: "I finally found a dentist my kids actually look forward to visiting.",
+    rating: 5,
+  },
 ];
 
 const stats = [
@@ -89,26 +138,93 @@ const stats = [
 ];
 
 const faqs = [
-  { q: "Do you accept dental insurance?", a: "Yes, we work with most major providers and offer in-house financing for uncovered procedures." },
-  { q: "How often should I visit?", a: "We recommend a check-up and cleaning every six months for most patients." },
-  { q: "Are implants painful?", a: "Procedures are performed under local anesthesia or sedation. Most patients report minimal discomfort." },
-  { q: "Do you treat children?", a: "Absolutely — our pediatric team makes every visit fun, calm, and educational." },
+  {
+    q: "Do you accept dental insurance?",
+    a: "Yes, we work with most major providers and offer in-house financing for uncovered procedures.",
+  },
+  {
+    q: "How often should I visit?",
+    a: "We recommend a check-up and cleaning every six months for most patients.",
+  },
+  {
+    q: "Are implants painful?",
+    a: "Procedures are performed under local anesthesia or sedation. Most patients report minimal discomfort.",
+  },
+  {
+    q: "Do you treat children?",
+    a: "Absolutely — our pediatric team makes every visit fun, calm, and educational.",
+  },
 ];
 
 function Landing() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
+      <Preloader />
       <Hero />
       <Stats />
       <Services />
+      <GallerySection />
       <WhyChooseUs />
       <Doctors />
       <Testimonials />
       <FAQ />
-      <Contact />
+      <Contact services={services} />
+      <MapSection />
       <Footer />
+      <WhatsAppButton />
     </div>
+  );
+}
+
+function WhatsAppButton() {
+  const [visible, setVisible] = useState(true);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setVisible(false);
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => setVisible(true), 300);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  return (
+    <a
+      href="https://wa.me/15550192834?text=Hello%20Denta%20team%2C%20I%20have%20a%20question"
+      target="_blank"
+      rel="noreferrer"
+      className={`fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-500/25 transition-transform transition-opacity duration-200 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
+      }`}
+      aria-label="Chat with us on WhatsApp"
+    >
+      <MessageSquare className="h-5 w-5" />
+      WhatsApp
+    </a>
   );
 }
 
@@ -134,12 +250,16 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const links = [
     { href: "#services", label: "Services" },
+    { href: "#gallery", label: "Gallery" },
     { href: "#doctors", label: "Doctors" },
     { href: "#why", label: "Why Us" },
     { href: "#faq", label: "FAQ" },
   ];
   return (
-    <header id="top" className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header
+      id="top"
+      className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl"
+    >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
         <Logo />
         <ul className="hidden items-center gap-9 text-sm font-medium text-muted-foreground md:flex">
@@ -155,7 +275,7 @@ function Navbar() {
           href="#contact"
           className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:brightness-110 md:inline-flex"
         >
-          Book Visit <ArrowUpRight className="h-4 w-4" />
+          Book Now <ArrowUpRight className="h-4 w-4" />
         </a>
         <button
           aria-label="Toggle menu"
@@ -198,7 +318,7 @@ function Navbar() {
 /* ---------------- Hero ---------------- */
 function Hero() {
   return (
-    <section className="px-5 pt-10 pb-6 lg:px-8 lg:pt-20 lg:pb-10">
+    <section className="reveal reveal-delay-100 px-5 pt-10 pb-6 lg:px-8 lg:pt-20 lg:pb-10">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="flex flex-col justify-center lg:col-span-7">
@@ -210,8 +330,8 @@ function Hero() {
               Artistry in every <span className="ember-grad-text">smile.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-              From preventive care to complex restorations, we provide a comprehensive
-              approach to your dental health using cutting-edge technology.
+              From preventive care to complex restorations, we provide a comprehensive approach to
+              your dental health using cutting-edge technology.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
@@ -241,7 +361,9 @@ function Hero() {
               />
               <div className="relative mt-4 flex items-center justify-between px-2 py-1">
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Featured</div>
+                  <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                    Featured
+                  </div>
                   <div className="mt-1 font-display text-lg font-bold">Titanium Implants</div>
                 </div>
                 <span className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -259,13 +381,13 @@ function Hero() {
 /* ---------------- Stats (bento) ---------------- */
 function Stats() {
   return (
-    <section className="mx-auto max-w-7xl px-5 pb-6 lg:px-8">
+    <section className="reveal reveal-delay-200 mx-auto max-w-7xl px-5 pb-6 lg:px-8">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="col-span-2 rounded-3xl border border-border bg-card-gradient p-7 shadow-card">
           <h3 className="font-display text-2xl font-bold">Why patients choose Denta</h3>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            A team of highly skilled dentists using the latest medical advancements to
-            ensure your comfort and care at every step.
+            A team of highly skilled dentists using the latest medical advancements to ensure your
+            comfort and care at every step.
           </p>
         </div>
         <div className="rounded-3xl bg-primary p-7 text-center shadow-glow">
@@ -301,7 +423,9 @@ function SectionHeader({
     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
       <div className="max-w-xl">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">{kicker}</p>
-        <h2 className="mt-4 font-display text-4xl font-extrabold text-balance sm:text-5xl">{title}</h2>
+        <h2 className="mt-4 font-display text-4xl font-extrabold text-balance sm:text-5xl">
+          {title}
+        </h2>
         {sub && <p className="mt-4 text-sm text-muted-foreground sm:text-base">{sub}</p>}
       </div>
       {cta && (
@@ -321,7 +445,10 @@ function SectionHeader({
 function Services() {
   const [first, second, third, fourth, fifth, sixth] = services;
   return (
-    <section id="services" className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+    <section
+      id="services"
+      className="reveal reveal-delay-300 mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"
+    >
       <SectionHeader
         kicker="Our Services"
         title="Premium treatments, tailored to every smile"
@@ -331,7 +458,7 @@ function Services() {
 
       <div className="mt-12 grid gap-4 md:grid-cols-3">
         {/* Hero service card */}
-        <div className="group relative overflow-hidden rounded-3xl border border-border bg-card-gradient p-8 md:col-span-2 md:p-10">
+        <div className="reveal reveal-delay-100 group relative overflow-hidden rounded-3xl border border-border bg-card-gradient p-8 md:col-span-2 md:p-10">
           <div className="absolute -right-20 -bottom-20 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative">
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -339,18 +466,21 @@ function Services() {
             </div>
             <h3 className="mt-7 font-display text-2xl font-bold sm:text-3xl">{first.title}</h3>
             <p className="mt-3 max-w-md leading-relaxed text-muted-foreground">{first.desc}</p>
-            <a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+            <a
+              href="#contact"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+            >
               Learn more <ArrowRight className="h-4 w-4" />
             </a>
           </div>
         </div>
 
-        <ServiceCard s={second} />
-        <ServiceCard s={third} />
-        <ServiceCard s={fourth} />
+        <ServiceCard s={second} delay="reveal-delay-200" />
+        <ServiceCard s={third} delay="reveal-delay-300" />
+        <ServiceCard s={fourth} delay="reveal-delay-100" />
 
         {/* CTA banner spanning 2 */}
-        <div className="relative flex flex-col items-start gap-5 overflow-hidden rounded-3xl bg-primary p-8 shadow-glow md:col-span-2 md:flex-row md:items-center md:justify-between md:p-10">
+        <div className="reveal reveal-delay-200 relative flex flex-col items-start gap-5 overflow-hidden rounded-3xl bg-primary p-8 shadow-glow md:col-span-2 md:flex-row md:items-center md:justify-between md:p-10">
           <div className="relative z-10">
             <h3 className="font-display text-2xl font-bold text-white sm:text-3xl">
               Ready for a dental consultation?
@@ -368,16 +498,18 @@ function Services() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent to-black/10" />
         </div>
 
-        <ServiceCard s={fifth} />
-        <ServiceCard s={sixth} />
+        <ServiceCard s={fifth} delay="reveal-delay-200" />
+        <ServiceCard s={sixth} delay="reveal-delay-300" />
       </div>
     </section>
   );
 }
 
-function ServiceCard({ s }: { s: (typeof services)[number] }) {
+function ServiceCard({ s, delay = "" }: { s: (typeof services)[number]; delay?: string }) {
   return (
-    <div className="group rounded-3xl border border-border bg-card-gradient p-7 transition-all hover:-translate-y-1 hover:border-primary/50">
+    <div
+      className={`reveal ${delay} group rounded-3xl border border-border bg-card-gradient p-7 transition-all hover:-translate-y-1 hover:border-primary/50`}
+    >
       <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary">
         <s.icon className="h-5 w-5" />
       </div>
@@ -390,7 +522,10 @@ function ServiceCard({ s }: { s: (typeof services)[number] }) {
 /* ---------------- Why Choose Us ---------------- */
 function WhyChooseUs() {
   return (
-    <section id="why" className="border-y border-border bg-surface/30 py-20 lg:py-28">
+    <section
+      id="why"
+      className="reveal reveal-delay-400 border-y border-border bg-surface/30 py-20 lg:py-28"
+    >
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <SectionHeader
           kicker="Why Choose Us"
@@ -400,7 +535,7 @@ function WhyChooseUs() {
           {reasons.map((r, i) => (
             <div
               key={r.title}
-              className={`group rounded-3xl border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/50 ${
+              className={`reveal reveal-delay-${100 + i * 100} group rounded-3xl border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/50 ${
                 i === 0 ? "bg-primary text-white shadow-glow" : "bg-card-gradient"
               }`}
             >
@@ -412,7 +547,9 @@ function WhyChooseUs() {
                 <r.icon className="h-5 w-5" />
               </div>
               <h3 className="mt-5 font-display text-xl font-bold">{r.title}</h3>
-              <p className={`mt-2 text-sm leading-relaxed ${i === 0 ? "text-white/85" : "text-muted-foreground"}`}>
+              <p
+                className={`mt-2 text-sm leading-relaxed ${i === 0 ? "text-white/85" : "text-muted-foreground"}`}
+              >
                 {r.desc}
               </p>
             </div>
@@ -426,17 +563,20 @@ function WhyChooseUs() {
 /* ---------------- Doctors ---------------- */
 function Doctors() {
   return (
-    <section id="doctors" className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+    <section
+      id="doctors"
+      className="reveal reveal-delay-500 mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"
+    >
       <SectionHeader
         kicker="Meet the Team"
         title="Specialists who genuinely care"
         sub="A team of dedicated experts committed to excellence."
       />
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {doctors.map((d) => (
+        {doctors.map((d, i) => (
           <article
             key={d.name}
-            className="group overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card"
+            className={`reveal reveal-delay-${100 + i * 100} group overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card`}
           >
             <div className="relative aspect-[4/5] overflow-hidden">
               <img
@@ -493,7 +633,7 @@ function Testimonials() {
 
   return (
     <section
-      className="border-y border-border bg-surface/30 py-20 lg:py-28"
+      className="reveal reveal-delay-600 border-y border-border bg-surface/30 py-20 lg:py-28"
       aria-roledescription="carousel"
       aria-label="Patient testimonials"
       onMouseEnter={() => setPaused(true)}
@@ -534,7 +674,9 @@ function Testimonials() {
                 <div className="mt-8 flex items-center justify-between">
                   <div>
                     <div className="font-display text-base font-bold">{t.name}</div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t.role}</div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      {t.role}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -574,9 +716,11 @@ function Testimonials() {
 
         {/* Stats strip */}
         <div className="mt-14 grid grid-cols-2 gap-4 rounded-3xl border border-border bg-card-gradient p-6 sm:grid-cols-4 sm:p-8">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="font-display text-4xl font-black ember-grad-text sm:text-5xl">{s.value}</div>
+          {stats.map((s, i) => (
+            <div key={s.label} className={`reveal reveal-delay-${100 + i * 100} text-center`}>
+              <div className="font-display text-4xl font-black ember-grad-text sm:text-5xl">
+                {s.value}
+              </div>
               <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                 {s.label}
               </div>
@@ -592,7 +736,10 @@ function Testimonials() {
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" className="mx-auto max-w-3xl px-5 py-20 lg:px-8 lg:py-28">
+    <section
+      id="faq"
+      className="reveal reveal-delay-700 mx-auto max-w-3xl px-5 py-20 lg:px-8 lg:py-28"
+    >
       <SectionHeader kicker="FAQ" title="Questions, answered" />
       <div className="mt-12 space-y-3">
         {faqs.map((f, k) => {
@@ -600,7 +747,7 @@ function FAQ() {
           return (
             <div
               key={f.q}
-              className="overflow-hidden rounded-2xl border border-border bg-card-gradient transition-colors hover:border-primary/40"
+              className={`reveal reveal-delay-${100 + k * 100} overflow-hidden rounded-2xl border border-border bg-card-gradient transition-colors hover:border-primary/40`}
             >
               <button
                 onClick={() => setOpen(isOpen ? null : k)}
@@ -623,125 +770,16 @@ function FAQ() {
   );
 }
 
-/* ---------------- Contact ---------------- */
-function Contact() {
-  return (
-    <section id="contact" className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
-      <div className="grid gap-10 lg:grid-cols-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Get in Touch</p>
-          <h2 className="mt-4 font-display text-4xl font-extrabold text-balance sm:text-5xl">
-            Book your visit to <span className="ember-grad-text">Denta</span>
-          </h2>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Tell us a little about you and our front desk will reach out within the hour
-            to confirm your appointment.
-          </p>
-          <ul className="mt-10 space-y-3">
-            {[
-              { Icon: MapPin, text: "24 Carrer del Pi, Barcelona, Spain" },
-              { Icon: Phone, text: "+34 932 000 121" },
-              { Icon: Mail, text: "hello@denta.care" },
-              { Icon: Clock, text: "Mon–Sat · 09:00 – 19:00" },
-            ].map(({ Icon, text }) => (
-              <li
-                key={text}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card-gradient px-4 py-3 text-sm"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert("Thanks! We'll be in touch shortly.");
-          }}
-          className="rounded-3xl border border-border bg-card-gradient p-6 shadow-card sm:p-8"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" name="name" placeholder="Jane Doe" />
-            <Field label="Phone" name="phone" placeholder="+34 ..." />
-          </div>
-          <div className="mt-4">
-            <Field label="Email" name="email" type="email" placeholder="you@email.com" />
-          </div>
-          <div className="mt-4">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Service
-            </label>
-            <select className="mt-2 w-full rounded-xl border border-input bg-background/60 px-4 py-3 text-sm outline-none focus:border-primary">
-              {services.map((s) => (
-                <option key={s.title}>{s.title}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mt-4">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Message
-            </label>
-            <textarea
-              rows={4}
-              className="mt-2 w-full rounded-xl border border-input bg-background/60 px-4 py-3 text-sm outline-none focus:border-primary"
-              placeholder="Tell us what brings you in..."
-            />
-          </div>
-          <button
-            type="submit"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition-all hover:brightness-110"
-          >
-            Request Appointment <ArrowRight className="h-4 w-4" />
-          </button>
-        </form>
-      </div>
-    </section>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  placeholder,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label
-        htmlFor={name}
-        className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
-      >
-        {label}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-input bg-background/60 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
-      />
-    </div>
-  );
-}
-
 /* ---------------- Footer ---------------- */
 function Footer() {
   return (
-    <footer className="border-t border-border bg-background">
+    <footer className="reveal reveal-delay-900 border-t border-border bg-background">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="sm:col-span-2">
           <Logo />
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Redefining the dental experience through clinical excellence and a
-            human-centric approach to modern dentistry.
+            Redefining the dental experience through clinical excellence and a human-centric
+            approach to modern dentistry.
           </p>
           <div className="mt-6 flex gap-3">
             {[Instagram, Twitter, Facebook].map((Icon, k) => (
